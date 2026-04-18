@@ -34,7 +34,7 @@ SdlExample::SdlExample() {
         throw std::runtime_error(std::format("SDL_GL_SetAttribute: %s", SDL_GetError()));
     }
 
-    constexpr unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
+    static constexpr unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
 
     m_window = SDL_CreateWindow("SDL Example", 1280, 720, flags);
 
@@ -44,13 +44,11 @@ SdlExample::SdlExample() {
 
     m_context = SDL_GL_CreateContext(m_window);
 
-    if (m_context == nullptr) {
+    if (!m_context) {
         throw std::runtime_error(std::format("SDL_GL_CreateContext: %s", SDL_GetError()));
     }
 
-    // if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
-    //     throw std::runtime_error("Could not load GLAD");
-    // }
+    m_hill.initialize_graphics_api(SDL_GL_GetProcAddress);
 
     if (!SDL_GL_SetSwapInterval(1)) {
 
@@ -72,6 +70,8 @@ void SdlExample::run() {
         throw std::runtime_error(std::format("SDL_ShowWindow: %s", SDL_GetError()));
     }
 
+    m_hill.initialize_renderer();
+
     while (m_running) {
         SDL_Event event;
 
@@ -82,6 +82,8 @@ void SdlExample::run() {
                     break;
             }
         }
+
+        m_hill.render();
 
         if (!SDL_GL_SwapWindow(m_window)) {
             throw std::runtime_error(std::format("SDL_GL_SwapWindow: %s", SDL_GetError()));

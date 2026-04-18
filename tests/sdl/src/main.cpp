@@ -7,7 +7,7 @@
 
 int main() {
     std::atexit(SDL_Quit);
-    std::println("Hello, world!");
+    std::println("SDL version: {}", SDL_GetVersion());
 
     try {
         SdlExample example;
