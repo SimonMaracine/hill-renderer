@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(
-    "hill-render-engine"
+    "hill-graphics-engine"
     VERSION "0.1.0"
     DESCRIPTION "Platform and windowing system agnostic 3D graphics rendering engine"
     HOMEPAGE_URL "https://github.com/SimonMaracine/hill"

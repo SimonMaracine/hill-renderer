@@ -2,8 +2,10 @@
 
 #include <stdexcept>
 #include <format>
+#include <print>
 
 #include <SDL3/SDL.h>
+#include <hill/graphics_api.hpp>
 
 SdlExample::SdlExample() {
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
@@ -48,7 +50,7 @@ SdlExample::SdlExample() {
         throw std::runtime_error(std::format("SDL_GL_CreateContext: %s", SDL_GetError()));
     }
 
-    m_hill.initialize_graphics_api(SDL_GL_GetProcAddress);
+    hill::graphics_api::initialize(SDL_GL_GetProcAddress);
 
     if (!SDL_GL_SetSwapInterval(1)) {
 
@@ -66,11 +68,13 @@ SdlExample::~SdlExample() {
 }
 
 void SdlExample::run() {
+    std::println("{}", hill::graphics_api::version());
+
     if (!SDL_ShowWindow(m_window)) {
         throw std::runtime_error(std::format("SDL_ShowWindow: %s", SDL_GetError()));
     }
 
-    m_hill.initialize_renderer();
+    m_renderer.initialize();
 
     while (m_running) {
         SDL_Event event;
@@ -83,10 +87,12 @@ void SdlExample::run() {
             }
         }
 
-        m_hill.render();
+        m_renderer.render();
 
         if (!SDL_GL_SwapWindow(m_window)) {
             throw std::runtime_error(std::format("SDL_GL_SwapWindow: %s", SDL_GetError()));
         }
     }
+
+    m_renderer.uninitialize();
 }

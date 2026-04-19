@@ -8,7 +8,8 @@ target_sources(
     hill
     PRIVATE
         "src/glad.cpp"
-        "src/hill.cpp"
+        "src/graphics_api.cpp"
+        "src/renderer.cpp"
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS
@@ -16,7 +17,8 @@ target_sources(
         FILES
             "include/hill/configuration.hpp"
             "include/hill/error.hpp"
-            "include/hill/hill.hpp"
+            "include/hill/graphics_api.hpp"
+            "include/hill/renderer.hpp"
 )
 
 target_link_libraries(hill PRIVATE glad)

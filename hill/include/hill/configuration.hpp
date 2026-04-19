@@ -1,6 +1,6 @@
 #pragma once
 
-namespace hill {
+namespace hill::configuration {
     struct Configuration {
 
     };

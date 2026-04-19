@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hill/hill.hpp>
+#include <hill/renderer.hpp>
 
 struct SDL_Window;
 
@@ -16,7 +16,7 @@ public:
 
     void run();
 private:
-    hill::HillRenderer m_hill;
+    hill::renderer::Renderer m_renderer;
 
     SDL_Window* m_window {};
     void* m_context {};
