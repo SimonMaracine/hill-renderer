@@ -1,8 +1,5 @@
 add_library(imgui_sdl STATIC)
 
-message(STATUS "${HILL_IMGUI_ROOT}")
-message(STATUS "${HILL_SDL_INCLUDE_DIRECTORY}")
-
 target_sources(
     imgui_sdl
     PRIVATE

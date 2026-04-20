@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(
-    "hill-graphics-engine"
+    "hill-renderer"
     VERSION "0.1.0"
     DESCRIPTION "Platform and windowing system agnostic 3D graphics rendering engine"
-    HOMEPAGE_URL "https://github.com/SimonMaracine/hill"
+    HOMEPAGE_URL "https://github.com/SimonMaracine/hill-renderer"
     LANGUAGES CXX C
 )
 
@@ -26,4 +26,5 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 message(STATUS "HILL_DISTRIBUTION: ${HILL_DISTRIBUTION}")
+message(STATUS "HILL_BUILD_TESTS: ${HILL_BUILD_TESTS}")
 message(STATUS)
