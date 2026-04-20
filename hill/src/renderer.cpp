@@ -17,16 +17,17 @@ namespace hill::renderer {
     void Renderer::initialize() {
         imgui_initialize();
 
-        glClearColor(0.4f, 0.1f, 0.6f, 1.0f);
-
         constexpr float vertices[] = {
-            0.5f, -0.5f, 0.0f,
-            0.0f, 0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.75f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, -0.75f, 0.0f, 0.0f, 0.0f, 1.0f
         };
 
         constexpr unsigned int indices[] = {
-            0, 1, 2
+            0, 1, 2, 3, 4, 5
         };
 
         const char* vertex_shader_source =
@@ -34,9 +35,13 @@ R"(
     #version 430 core
 
     layout(location = 0) in vec3 a_position;
+    layout(location = 1) in vec3 a_color;
+
+    out vec3 v_color;
 
     void main() {
         gl_Position = vec4(a_position, 1.0);
+        v_color = a_color;
     }
 )";
 
@@ -44,10 +49,12 @@ R"(
 R"(
     #version 430 core
 
-    out vec4 o_fragment;
+    in vec3 v_color;
+
+    layout(location = 0) out vec4 o_fragment;
 
     void main() {
-        o_fragment = vec4(0.8, 0.2, 0.1, 1.0);
+        o_fragment = vec4(v_color, 1.0);
     }
 )";
 
@@ -64,8 +71,10 @@ R"(
         glGenVertexArrays(1, &m_vertex_array);
         glBindVertexArray(m_vertex_array);
         glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(0));
         glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -98,11 +107,18 @@ R"(
     }
 
     void Renderer::render() {
+        glClearColor(m_background_color[0], m_background_color[1], m_background_color[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(m_shader_program);
         glBindVertexArray(m_vertex_array);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+        glUseProgram(0);
+
+        glUseProgram(m_shader_program);
+        glBindVertexArray(m_vertex_array);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, reinterpret_cast<void*>(3 * sizeof(unsigned int)));
         glBindVertexArray(0);
         glUseProgram(0);
 
@@ -133,5 +149,9 @@ R"(
 
     void Renderer::imgui() {
         ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Test");
+        ImGui::ColorEdit3("Background Color", m_background_color);
+        ImGui::End();
     }
 }
