@@ -2,7 +2,9 @@
 
 #include <cstddef>
 
-namespace hill::buffer {
+#include "buffer.hpp"
+
+namespace hill::vertex_buffer {
     class VertexBuffer {
     public:
         VertexBuffer();
@@ -13,11 +15,11 @@ namespace hill::buffer {
         VertexBuffer(VertexBuffer&&) = delete;
         VertexBuffer& operator=(VertexBuffer&&) = delete;
 
-        unsigned int handle() const { return m_vertex_buffer; }
+        unsigned int id() const { return m_vertex_buffer; }
 
         void bind() const;
         void unbind() const;
-        void upload_data(const void* vertices, std::size_t size) const;
+        void upload_data(const void* vertices, std::size_t size, buffer::Usage usage = buffer::Usage::StaticDraw) const;
     private:
         unsigned int m_vertex_buffer {};
     };

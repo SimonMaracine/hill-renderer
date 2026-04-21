@@ -8,7 +8,10 @@ add_library(hill STATIC)
 target_sources(
     hill
     PRIVATE
-        "src/buffer.cpp"
+        "src/primitives/buffer.cpp"
+        "src/primitives/element_buffer.cpp"
+        "src/primitives/vertex_array.cpp"
+        "src/primitives/vertex_buffer.cpp"
         "src/glad.cpp"
         "src/graphics_api.cpp"
         "src/renderer.cpp"
@@ -17,7 +20,10 @@ target_sources(
         BASE_DIRS
             "include"
         FILES
-            "include/hill/buffer.hpp"
+            "include/hill/primitives/buffer.hpp"
+            "include/hill/primitives/element_buffer.hpp"
+            "include/hill/primitives/vertex_array.hpp"
+            "include/hill/primitives/vertex_buffer.hpp"
             "include/hill/configuration.hpp"
             "include/hill/error.hpp"
             "include/hill/graphics_api.hpp"
