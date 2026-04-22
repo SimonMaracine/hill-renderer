@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hill/renderer.hpp>
+#include <hill/editor.hpp>
 
 struct SDL_Window;
 
@@ -18,10 +19,12 @@ public:
     void uninitialize() const override;
     void begin() const override;
     void end(ImDrawData* draw_data) const override;
+    void update() override;
 
     void run();
 private:
     hill::renderer::Renderer m_renderer;
+    hill::editor::Editor m_editor;
 
     SDL_Window* m_window {};
     void* m_context {};

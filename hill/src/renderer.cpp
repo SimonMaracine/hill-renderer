@@ -4,10 +4,10 @@
 #include <imgui.h>
 
 namespace hill::renderer {
-    Renderer::Renderer(const imgui::ImGui& imgui)
+    Renderer::Renderer(imgui::ImGui& imgui)
         : m_imgui(&imgui) {}
 
-    Renderer::Renderer(const imgui::ImGui& imgui, const configuration::Configuration& configuration)
+    Renderer::Renderer(imgui::ImGui& imgui, const configuration::Configuration& configuration)
         : m_imgui(&imgui), m_configuration(configuration) {}
 
     Renderer::~Renderer() {
@@ -144,18 +144,10 @@ R"(
         m_imgui->begin();
         ImGui::NewFrame();
 
-        imgui();
+        m_imgui->update();
 
         ImGui::EndFrame();
         ImGui::Render();
         m_imgui->end(ImGui::GetDrawData());
-    }
-
-    void Renderer::imgui() {
-        ImGui::ShowDemoWindow();
-
-        ImGui::Begin("Test");
-        ImGui::ColorEdit3("Background Color", m_background_color);
-        ImGui::End();
     }
 }

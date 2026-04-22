@@ -16,5 +16,6 @@ namespace hill::imgui {
         virtual void uninitialize() const = 0;
         virtual void begin() const = 0;
         virtual void end(ImDrawData* draw_data) const = 0;
+        virtual void update() = 0;
     };
 }

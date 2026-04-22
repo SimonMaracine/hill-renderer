@@ -17,6 +17,10 @@ namespace hill::shader {
         using ShaderError::ShaderError;
     };
 
+    struct LinkError : ShaderError {
+        using ShaderError::ShaderError;
+    };
+
     enum class ShaderType {
         Vertex,
         Fragment
@@ -56,7 +60,7 @@ namespace hill::shader {
         unsigned int id() const { return m_program; }
 
         void attach_shader(std::shared_ptr<Shader> shader);
-        void detach_shader(std::shared_ptr<Shader> shader);
+        void detach_shader(const std::shared_ptr<Shader>& shader);
         void detach_shader(unsigned int shader);
 
         void link() const;
@@ -64,6 +68,9 @@ namespace hill::shader {
         void use() const;
         void unuse() const;
     private:
+        bool link_successful() const;
+        std::string info_log() const;
+
         unsigned int m_program {};
         std::unordered_set<std::shared_ptr<Shader>, common::IdHash<Shader>> m_shaders;
     };

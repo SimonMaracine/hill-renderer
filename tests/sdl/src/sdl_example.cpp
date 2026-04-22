@@ -89,6 +89,10 @@ void SdlExample::end(ImDrawData* draw_data) const {
     ImGui_ImplOpenGL3_RenderDrawData(draw_data);
 }
 
+void SdlExample::update() {
+    m_editor.update(m_renderer);
+}
+
 void SdlExample::run() {
     std::println("{}", hill::graphics_api::version());
 
