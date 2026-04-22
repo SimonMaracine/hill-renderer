@@ -4,6 +4,7 @@
 #include <array>
 #include <unordered_set>
 
+#include "hill/primitives/common.hpp"
 #include "hill/primitives/vertex_buffer.hpp"
 #include "hill/primitives/element_buffer.hpp"
 
@@ -56,7 +57,7 @@ namespace hill::vertex_array {
         void configure_and_unbind(std::shared_ptr<element_buffer::ElementBuffer> element_buffer);
     private:
         unsigned int m_vertex_array {};
-        std::unordered_set<std::shared_ptr<vertex_buffer::VertexBuffer>> m_vertex_buffers;
+        std::unordered_set<std::shared_ptr<vertex_buffer::VertexBuffer>, common::IdHash<vertex_buffer::VertexBuffer>> m_vertex_buffers;
         std::shared_ptr<element_buffer::ElementBuffer> m_element_buffer;
     };
 }

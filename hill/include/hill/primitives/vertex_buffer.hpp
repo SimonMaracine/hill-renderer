@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "buffer.hpp"
+#include "hill/primitives/common.hpp"
 
 namespace hill::vertex_buffer {
     class VertexBuffer {
@@ -19,7 +19,7 @@ namespace hill::vertex_buffer {
 
         void bind() const;
         void unbind() const;
-        void upload_data(const void* vertices, std::size_t size, buffer::Usage usage = buffer::Usage::StaticDraw) const;
+        void upload_data(const void* vertices, std::size_t size, common::BufferUsage usage = common::BufferUsage::StaticDraw) const;
     private:
         unsigned int m_vertex_buffer {};
     };

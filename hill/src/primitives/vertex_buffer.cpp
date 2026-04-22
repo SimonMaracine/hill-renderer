@@ -19,7 +19,7 @@ namespace hill::vertex_buffer {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::upload_data(const void* vertices, std::size_t size, buffer::Usage usage) const {
-        glBufferData(GL_ARRAY_BUFFER, long(size), vertices, usage_enum(usage));
+    void VertexBuffer::upload_data(const void* vertices, std::size_t size, common::BufferUsage usage) const {
+        glBufferData(GL_ARRAY_BUFFER, long(size), vertices, common::buffer_usage_enum(usage));
     }
 }

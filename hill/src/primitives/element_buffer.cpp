@@ -19,7 +19,7 @@ namespace hill::element_buffer {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void ElementBuffer::upload_data(const void* indices, std::size_t size, buffer::Usage usage) const {
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, long(size), indices, usage_enum(usage));
+    void ElementBuffer::upload_data(const void* indices, std::size_t size, common::BufferUsage usage) const {
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, long(size), indices, common::buffer_usage_enum(usage));
     }
 }
