@@ -9,8 +9,18 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <hill/graphics_api.hpp>
 
+static hill::configuration::Configuration make_configuration() {
+    hill::debug::DebugOutput debug_output;
+    debug_output.output_callback = [](std::string message) { std::println(stderr, "{}", message); };
+
+    hill::configuration::Configuration config;
+    config.debug_output = debug_output;
+
+    return config;
+}
+
 SdlExample::SdlExample()
-    : m_renderer(*this) {
+    : m_renderer(*this, make_configuration()) {
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
         throw std::runtime_error(std::format("SDL_InitSubSystem: %s", SDL_GetError()));
     }
@@ -24,6 +34,10 @@ SdlExample::SdlExample()
     }
 
     if (!SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)) {
+        throw std::runtime_error(std::format("SDL_GL_SetAttribute: %s", SDL_GetError()));
+    }
+
+    if (!SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG)) {
         throw std::runtime_error(std::format("SDL_GL_SetAttribute: %s", SDL_GetError()));
     }
 

@@ -6,4 +6,5 @@ namespace hill::graphics_api {
 
     void initialize(LoadFunction load_function);
     const char* version();
+    bool debug_context();
 }

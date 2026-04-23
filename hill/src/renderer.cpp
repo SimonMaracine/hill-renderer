@@ -3,6 +3,9 @@
 #include <glad/gl.h>  // FIXME remove
 #include <imgui.h>
 
+#include "hill/graphics_api.hpp"
+#include "hill/debug.hpp"
+
 namespace hill::renderer {
     Renderer::Renderer(imgui::ImGui& imgui)
         : m_imgui(&imgui) {}
@@ -15,6 +18,10 @@ namespace hill::renderer {
     }
 
     void Renderer::initialize() {
+        if (m_configuration.debug_output && graphics_api::debug_context()) {
+            debug::initialize(*m_configuration.debug_output);
+        }
+
         imgui_initialize();
 
         constexpr float vertices[] = {
