@@ -5,6 +5,8 @@
 #include <memory>
 #include <unordered_set>
 
+#include <glm/glm.hpp>
+
 #include "hill/primitives/common.hpp"
 #include "hill/error.hpp"
 
@@ -67,6 +69,8 @@ namespace hill::shader {
 
         void use() const;
         void unuse() const;
+
+        void upload_uniform_vec3(const std::string& name, glm::vec3 value) const;
     private:
         bool link_successful() const;
         std::string info_log() const;

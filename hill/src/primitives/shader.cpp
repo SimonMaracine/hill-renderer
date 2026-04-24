@@ -123,6 +123,16 @@ namespace hill::shader {
         glUseProgram(0);
     }
 
+    void Program::upload_uniform_vec3(const std::string& name, glm::vec3 value) const {
+        const int location = glGetUniformLocation(m_program, name.c_str());
+
+        if (location < 0) {
+            throw ShaderError(std::format("Could not find uniform: {}", name));
+        }
+
+        glUniform3f(location, value.x, value.y, value.z);
+    }
+
     bool Program::link_successful() const {
         int link_status {};
         glGetProgramiv(m_program, GL_LINK_STATUS, &link_status);

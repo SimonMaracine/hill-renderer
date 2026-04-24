@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 include(cmake/glad.cmake)
+include(cmake/glm.cmake)
 include(cmake/imgui.cmake)
 
 add_library(hill STATIC)
@@ -44,7 +45,7 @@ target_sources(
 )
 
 target_link_libraries(hill PRIVATE glad)
-target_link_libraries(hill PUBLIC imgui)
+target_link_libraries(hill PUBLIC imgui glm::glm)
 
 set_target_cpp_mode(hill)
 set_target_warnings(hill)

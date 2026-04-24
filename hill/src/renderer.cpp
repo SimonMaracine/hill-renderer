@@ -107,7 +107,7 @@ R"(
     void Renderer::render() {
         renderer_command::viewport(m_window_width, m_window_height);
 
-        renderer_command::clear_color(m_background_color[0], m_background_color[1], m_background_color[2], 1.0f);
+        renderer_command::clear_color({ m_background_color[0], m_background_color[1], m_background_color[2], 1.0f });
         renderer_command::clear(renderer_command::Buffers::C);
 
         submit(m_program, m_vertex_array, 3, 0);

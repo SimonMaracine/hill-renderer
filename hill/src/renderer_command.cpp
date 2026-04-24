@@ -38,9 +38,9 @@ namespace hill::renderer_command {
 
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(std::size_t(offset) * sizeof(unsigned int)));
     }
-    
-    void clear_color(float r, float g, float b, float a) {
-        glClearColor(r, g, b, a);
+
+    void clear_color(glm::vec4 color) {
+        glClearColor(color.r, color.g, color.b, color.a);
     }
 
     void viewport(int x, int y, int width, int height) {
