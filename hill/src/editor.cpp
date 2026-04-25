@@ -20,14 +20,10 @@ namespace hill::editor {
     }
 
     void Editor::update_camera(renderer::Renderer& renderer) {
-        static constexpr float MOVE_SPEED = 23.0f;
         static constexpr float SHIFT_SPEED = 5.0f;
         static constexpr float LOOK_SPEED = 7.0f;
 
         if (!ImGui::GetIO().WantCaptureMouse) {
-            const float scroll = ImGui::GetIO().MouseWheel;
-            m_camera.position += scroll * MOVE_SPEED * m_camera.front * ImGui::GetIO().DeltaTime;
-
             if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
                 const ImVec2 delta = ImGui::GetIO().MouseDelta;
                 m_camera.yaw += -delta.x * LOOK_SPEED * ImGui::GetIO().DeltaTime;
@@ -40,13 +36,17 @@ namespace hill::editor {
 
         if (!ImGui::GetIO().WantCaptureKeyboard) {
             if (ImGui::IsKeyDown(ImGuiKey_W)) {
-                m_camera.position += glm::normalize(m_camera.up) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position += SHIFT_SPEED * m_camera.front * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_S)) {
-                m_camera.position -= glm::normalize(m_camera.up) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position -= SHIFT_SPEED * m_camera.front * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_A)) {
                 m_camera.position -= glm::normalize(glm::cross(m_camera.front, m_camera.up)) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_D)) {
                 m_camera.position += glm::normalize(glm::cross(m_camera.front, m_camera.up)) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+            } else if (ImGui::IsKeyDown(ImGuiKey_E)) {
+                m_camera.position += glm::normalize(m_camera.up) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+            } else if (ImGui::IsKeyDown(ImGuiKey_Q)) {
+                m_camera.position -= glm::normalize(m_camera.up) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
             }
         }
 
