@@ -5,10 +5,10 @@
 #include <utility>
 
 namespace hill::image {
-    Image::Image(const std::string& file_buffer) {
+    Image::Image(const utility::Buffer& buffer) {
         m_data = stbi_load_from_memory(
-            reinterpret_cast<const unsigned char*>(file_buffer.data()),
-            int (file_buffer.size()),
+            reinterpret_cast<const unsigned char*>(buffer.data()),
+            int (buffer.size()),
             &m_width,
             &m_height,
             &m_channels,

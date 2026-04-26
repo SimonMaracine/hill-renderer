@@ -1,13 +1,12 @@
 #pragma once
 
-#include <string>
-
+#include "hill/utility.hpp"
 #include "hill/error.hpp"
 
 namespace hill::image {
     class Image {
     public:
-        explicit Image(const std::string& file_buffer);
+        explicit Image(const utility::Buffer& buffer);
         ~Image();
 
         Image(const Image&) = delete;

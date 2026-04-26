@@ -1,20 +1,31 @@
 #pragma once
 
-#include <memory>
+#include <vector>
 
-#include "hill/primitives/vertex_array.hpp"
+#include <glm/glm.hpp>
 
 namespace hill::mesh {
-    class Mesh {
-    public:
-        Mesh() = default;
-        Mesh(int elements_count, std::shared_ptr<vertex_array::VertexArray> vertex_array)
-            : m_elements_count(elements_count), m_vertex_array(std::move(vertex_array)) {}
+    struct Vertex {
+        glm::vec3 position {};
+        glm::vec3 color {};
+        glm::vec3 normal {};
+        glm::vec2 texture_coordinate {};
+    };
 
-        int elements_count() const { return m_elements_count; }
-        std::shared_ptr<vertex_array::VertexArray> vertex_array() const { return m_vertex_array; }
-    private:
-        int m_elements_count {};
-        std::shared_ptr<vertex_array::VertexArray> m_vertex_array;
+    enum class TextureType {
+        Albedo,
+        Specular,
+        Normal
+    };
+
+    struct Texture {
+        unsigned int texture {};
+        TextureType type {};
+    };
+
+    struct Mesh {
+        std::vector<Vertex> vertices;
+        std::vector<unsigned int> indices;
+        std::vector<Texture> textures;
     };
 }

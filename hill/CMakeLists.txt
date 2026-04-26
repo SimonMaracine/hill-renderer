@@ -23,9 +23,11 @@ target_sources(
         "src/graphics_api.cpp"
         "src/image.cpp"
         "src/mesh.cpp"
+        "src/model.cpp"
         "src/primitives_registry.cpp"
         "src/renderer.cpp"
         "src/renderer_command.cpp"
+        "src/utility.cpp"
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS
@@ -46,9 +48,11 @@ target_sources(
             "include/hill/image.hpp"
             "include/hill/imgui.hpp"
             "include/hill/mesh.hpp"
+            "include/hill/model.hpp"
             "include/hill/primitives_registry.hpp"
             "include/hill/renderer.hpp"
             "include/hill/renderer_command.hpp"
+            "include/hill/utility.hpp"
 )
 
 target_link_libraries(hill PRIVATE glad stb_image assimp::assimp)

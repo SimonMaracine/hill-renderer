@@ -124,8 +124,8 @@ R"(
         m_program->upload_uniform_float16("u_projection_view", m_editor_camera.projection_view());
         m_program->unuse();
 
-        submit(m_program, m_vertex_array, 3, 0);
-        submit(m_program, m_vertex_array, 3, 3);
+        submit(m_program, { 3, 0, m_vertex_array });
+        submit(m_program, { 3, 3, m_vertex_array });
 
         imgui_render();
     }
@@ -157,11 +157,15 @@ R"(
         m_imgui->end(ImGui::GetDrawData());
     }
 
-    void Renderer::submit(std::shared_ptr<shader::Program> program, std::shared_ptr<vertex_array::VertexArray> vertex_array, int count, int offset) {
+    void Renderer::submit(const model::Model& model) {
+
+    }
+
+    void Renderer::submit(std::shared_ptr<shader::Program> program, const Mesh& mesh) {
         program->use();
-        vertex_array->bind();
-        renderer_command::draw_elements_triangles(count, offset);
-        vertex_array->unbind();
+        mesh.vertex_array->bind();
+        renderer_command::draw_elements_triangles(mesh.elements_count, mesh.elements_offset);
+        mesh.vertex_array->unbind();
         program->unuse();
     }
 }

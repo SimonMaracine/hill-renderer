@@ -10,12 +10,19 @@
 #include "hill/configuration.hpp"
 #include "hill/imgui.hpp"
 #include "hill/camera.hpp"
+#include "hill/model.hpp"
 
 namespace hill::editor {
     class Editor;
 }
 
 namespace hill::renderer {
+    struct Mesh {
+        int elements_count {};
+        int elements_offset {};
+        std::shared_ptr<vertex_array::VertexArray> vertex_array;
+    };
+
     class Renderer {
     public:
         explicit Renderer(imgui::ImGui& imgui);
@@ -30,7 +37,8 @@ namespace hill::renderer {
         void imgui_uninitialize() const;
         void imgui_render() const;
 
-        void submit(std::shared_ptr<shader::Program> program, std::shared_ptr<vertex_array::VertexArray> vertex_array, int count, int offset);
+        void submit(const model::Model& model);
+        void submit(std::shared_ptr<shader::Program> program, const Mesh& mesh);
 
         imgui::ImGui* m_imgui {};
         configuration::Configuration m_configuration;
