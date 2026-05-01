@@ -3,8 +3,9 @@
 #include "hill/renderer.hpp"
 
 namespace hill::scene {
-    void Node::add(const std::string& name, std::shared_ptr<Node> child) {
-        m_children[name] = std::move(child);
+    void Node::add(std::shared_ptr<Node> child) {
+        const auto name = child->name();
+        m_children[std::string(name)] = std::move(child);
     }
 
     void RootNode::process(renderer::Renderer& renderer) {

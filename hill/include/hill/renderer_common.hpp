@@ -9,7 +9,7 @@
 
 namespace hill::renderer_common {
     struct Object {
-        glm::mat4 transformation = glm::identity<glm::mat4>();
+        glm::mat4 transform = glm::identity<glm::mat4>();
         int elements_count {};
         int elements_offset {};
         std::shared_ptr<vertex_array::VertexArray> vertex_array;

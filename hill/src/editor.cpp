@@ -6,9 +6,17 @@
 
 #include "hill/renderer.hpp"
 #include "hill/primitives_registry.hpp"
+#include "hill/scene.hpp"
 
 namespace hill::editor {
+    void Editor::initialize() {
+        auto& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    }
+
     void Editor::update(renderer::Renderer& renderer) {
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Test");
@@ -17,6 +25,8 @@ namespace hill::editor {
 
         performance(renderer);
         primitives_registry(renderer);
+        scene_hierarchy(renderer);
+        node_properties(renderer);
     }
 
     void Editor::update_camera(renderer::Renderer& renderer) {
@@ -88,5 +98,35 @@ namespace hill::editor {
 
             ImGui::TreePop();
         }
+    }
+
+    void Editor::scene_hierarchy(renderer::Renderer& renderer) {
+        if (ImGui::Begin("Scene Hierarchy")) {
+            scene_hierarchy_tree(renderer.root_node(), "");
+        }
+
+        ImGui::End();
+    }
+
+    void Editor::scene_hierarchy_tree(scene::Node* tree, std::string path) {
+        using namespace std::string_literals;
+
+        path += tree->name().data() + "/"s;
+
+        if (ImGui::TreeNode(path.c_str(), "%s", tree->name().data())) {
+            for (const auto& node : tree->m_children | std::views::values) {
+                scene_hierarchy_tree(node.get(), path);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    void Editor::node_properties(renderer::Renderer& renderer) {
+        if (ImGui::Begin("Node Properties")) {
+
+        }
+
+        ImGui::End();
     }
 }

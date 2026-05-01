@@ -101,7 +101,7 @@ namespace hill::renderer {
         }
 
         for (renderer_common::Object& object : node->m_objects) {
-            object.transformation = node->transformation;
+            object.transform = node->transform;
         }
 
         m_objects.append_range(node->m_objects);
@@ -138,7 +138,7 @@ namespace hill::renderer {
         object.program->use();
         object.vertex_array->bind();
 
-        object.program->upload_uniform_float16("u_transform", object.transformation);
+        object.program->upload_uniform_float16("u_transform", object.transform);
         renderer_command::draw_elements_triangles(object.elements_count, object.elements_offset);
 
         object.vertex_array->unbind();

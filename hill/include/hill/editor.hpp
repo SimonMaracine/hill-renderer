@@ -1,16 +1,21 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <string>
 
-#include "hill/camera.hpp"
+#include <glm/glm.hpp>
 
 namespace hill::renderer {
     class Renderer;
 }
 
+namespace hill::scene {
+    class Node;
+}
+
 namespace hill::editor {
     class Editor {
     public:
+        void initialize();
         void update(renderer::Renderer& renderer);
         void update_camera(renderer::Renderer& renderer);
     private:
@@ -18,6 +23,11 @@ namespace hill::editor {
 
         void primitives_registry(renderer::Renderer& renderer);
         void primitives_object(const char* label, const auto& objects);
+
+        void scene_hierarchy(renderer::Renderer& renderer);
+        void scene_hierarchy_tree(scene::Node* tree, std::string path);
+
+        void node_properties(renderer::Renderer& renderer);
 
         struct Camera {
             glm::vec3 position {0.0f, 0.0f, 2.0f};
