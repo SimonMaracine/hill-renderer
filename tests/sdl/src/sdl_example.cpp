@@ -117,6 +117,11 @@ void SdlExample::run() {
 
     m_renderer.initialize();
 
+    hill::utility::Buffer buffer;
+    hill::utility::read_file("assets/teapot.obj", buffer);
+
+    m_renderer.root_node()->add("teapot", std::make_shared<hill::scene::ModelNode>(hill::model::Model(buffer)));
+
     while (m_running) {
         SDL_Event event;
 

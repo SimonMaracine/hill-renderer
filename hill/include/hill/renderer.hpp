@@ -26,30 +26,30 @@ namespace hill::renderer {
         void uninitialize();
         void render();
         void window_resize(int width, int height);
+
+        scene::RootNode* root_node() const { return m_root_node.get(); }
     private:
         void imgui_initialize() const;
         void imgui_uninitialize() const;
         void imgui_render() const;
 
-        void submit(std::shared_ptr<scene::ModelNode> node);
+        void submit(scene::ModelNode* node);
 
         void begin();
+        void traverse_tree(scene::Node* tree);
         void end();
+        void process_node(scene::RootNode* node);
+        void process_node(scene::ModelNode* node);
 
         void draw_object(const renderer_common::Object& object) const;
 
-        void configure(std::shared_ptr<scene::ModelNode> node);
+        void configure(scene::ModelNode* node);
 
         std::shared_ptr<vertex_array::VertexArray> create_vertex_array(const mesh::Mesh& mesh) const;
         std::shared_ptr<shader::Program> create_program(const mesh::Mesh& mesh);
 
         imgui::ImGui* m_imgui {};
         configuration::Configuration m_configuration;
-
-        // std::shared_ptr<vertex_buffer::VertexBuffer> m_vertex_buffer;
-        // std::shared_ptr<element_buffer::ElementBuffer> m_element_buffer;
-        // std::shared_ptr<vertex_array::VertexArray> m_vertex_array;
-        // std::shared_ptr<shader::Program> m_program;
 
         int m_window_width {};
         int m_window_height {};
@@ -58,6 +58,8 @@ namespace hill::renderer {
 
         camera::Camera m_editor_camera;
 
+        std::unique_ptr<scene::RootNode> m_root_node;
+
         std::vector<renderer_common::Object> m_objects;
         std::unordered_map<std::string, std::weak_ptr<shader::Program>> m_programs;
 
@@ -65,5 +67,7 @@ namespace hill::renderer {
         std::chrono::duration<double> m_frame_time {};
 
         friend class editor::Editor;
+        friend class scene::RootNode;
+        friend class scene::ModelNode;
     };
 }

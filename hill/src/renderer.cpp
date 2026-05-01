@@ -28,10 +28,13 @@ namespace hill::renderer {
         imgui_initialize();
         primitives_registry::Registry::initialize();
 
+        m_root_node = std::make_unique<scene::RootNode>();
         m_last_time = std::chrono::high_resolution_clock::now();
     }
 
     void Renderer::uninitialize() {
+        m_root_node.reset();
+
         primitives_registry::Registry::uninitialize();
         imgui_uninitialize();
     }
@@ -58,7 +61,7 @@ namespace hill::renderer {
         }
 
         begin();
-        // submit();
+        traverse_tree(m_root_node.get());
         end();
 
         imgui_render();
@@ -91,10 +94,14 @@ namespace hill::renderer {
         m_imgui->end(ImGui::GetDrawData());
     }
 
-    void Renderer::submit(std::shared_ptr<scene::ModelNode> node) {
+    void Renderer::submit(scene::ModelNode* node) {
         if (!node->m_configured) {
             configure(node);
             node->m_configured = true;
+        }
+
+        for (renderer_common::Object& object : node->m_objects) {
+            object.transformation = node->transformation;
         }
 
         m_objects.append_range(node->m_objects);
@@ -102,6 +109,13 @@ namespace hill::renderer {
 
     void Renderer::begin() {
 
+    }
+
+    void Renderer::traverse_tree(scene::Node* tree) {
+        for (const auto& node : tree->m_children | std::views::values) {
+            node->process(*this);
+            traverse_tree(node.get());
+        }
     }
 
     void Renderer::end() {
@@ -112,15 +126,26 @@ namespace hill::renderer {
         m_objects.clear();
     }
 
+    void Renderer::process_node(scene::RootNode* node) {
+
+    }
+
+    void Renderer::process_node(scene::ModelNode* node) {
+        submit(node);
+    }
+
     void Renderer::draw_object(const renderer_common::Object& object) const {
         object.program->use();
         object.vertex_array->bind();
+
+        object.program->upload_uniform_float16("u_transform", object.transformation);
         renderer_command::draw_elements_triangles(object.elements_count, object.elements_offset);
+
         object.vertex_array->unbind();
         object.program->unuse();
     }
 
-    void Renderer::configure(std::shared_ptr<scene::ModelNode> node) {
+    void Renderer::configure(scene::ModelNode* node) {
         for (const mesh::Mesh& mesh : node->m_model.meshes()) {
             renderer_common::Object& object = node->m_objects.emplace_back();
             object.elements_count = int(mesh.indices.size());
@@ -171,15 +196,12 @@ R"(
     #version 430 core
 
     layout(location = 0) in vec3 a_position;
-    layout(location = 1) in vec3 a_color;
-
-    out vec3 v_color;
 
     uniform mat4 u_projection_view;
+    uniform mat4 u_transform;
 
     void main() {
-        gl_Position = u_projection_view * vec4(a_position, 1.0);
-        v_color = a_color;
+        gl_Position = u_projection_view * u_transform * vec4(a_position, 1.0);
     }
 )";
 
@@ -187,12 +209,10 @@ R"(
 R"(
     #version 430 core
 
-    in vec3 v_color;
-
-    layout(location = 0) out vec4 o_fragment;
+    layout(location = 0) out vec4 o_color;
 
     void main() {
-        o_fragment = vec4(v_color, 1.0);
+        o_color = vec4(0.5, 0.5, 0.5, 1.0);
     }
 )";
 
