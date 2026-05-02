@@ -3,12 +3,12 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include <string_view>
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 #include "hill/model.hpp"
+#include "hill/light.hpp"
 #include "hill/renderer_common.hpp"
 
 namespace hill::renderer {
@@ -35,7 +35,7 @@ namespace hill::scene {
 
         virtual void process(renderer::Renderer& renderer) = 0;
 
-        std::string_view name() const { return m_name; }
+        const std::string& name() const { return m_name; }
 
         void add(std::shared_ptr<Node> child);
     protected:
@@ -48,9 +48,6 @@ namespace hill::scene {
 
     class RootNode : public Node {
     public:
-        RootNode()
-            : Node("/") {}
-
         void process(renderer::Renderer& renderer) override;
     private:
 
@@ -70,6 +67,18 @@ namespace hill::scene {
         model::Model m_model;
         std::vector<renderer_common::Object> m_objects;
         bool m_configured {};
+
+        friend class renderer::Renderer;
+    };
+
+    class DirectionalLightNode : public Node {
+    public:
+        DirectionalLightNode(std::string name, const light::DirectionalLight& directional_light)
+            : Node(std::move(name)), m_directional_light(directional_light) {}
+
+        void process(renderer::Renderer& renderer) override;
+    private:
+        light::DirectionalLight m_directional_light;
 
         friend class renderer::Renderer;
     };

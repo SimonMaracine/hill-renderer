@@ -13,7 +13,7 @@ namespace hill::model {
             case aiTextureType_DIFFUSE:
                 return mesh::TextureType::Albedo;
             case aiTextureType_SPECULAR:
-                return mesh::TextureType::Specular;
+                return mesh::TextureType::Metallic;
             case aiTextureType_NORMALS:
                 return mesh::TextureType::Normal;
             default:
@@ -38,7 +38,75 @@ namespace hill::model {
         return textures;
     }
 
-    static mesh::Mesh process_mesh(const aiMesh* mesh, const aiScene* scene) {
+    static mesh::Material load_material_properties(const aiMaterial* material) {
+        mesh::Material result_material;
+        result_material.name = material->GetName().C_Str();
+
+        if (aiColor4D color; aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &color) == aiReturn_SUCCESS) {
+            result_material.color_ambient = glm::vec3(color.r, color.g, color.b);
+        }
+
+        if (aiColor4D color; aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &color) == aiReturn_SUCCESS) {
+            result_material.color_diffuse = glm::vec3(color.r, color.g, color.b);
+        }
+
+        if (aiColor4D color; aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color) == aiReturn_SUCCESS) {
+            result_material.color_specular = glm::vec3(color.r, color.g, color.b);
+        }
+
+        return result_material;
+    }
+
+    Model::Model(const utility::Buffer& buffer) {
+        Assimp::Importer importer;
+        const aiScene* scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(), aiProcess_Triangulate | aiProcess_GenNormals);
+
+        if (!scene) {
+            throw ModelError(std::format("Could not load model: {}", importer.GetErrorString()));
+        }
+
+        if (!scene->mRootNode) {
+            throw ModelError("No root node in scene");
+        }
+
+        if (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
+            throw ModelError("Model is incomplete");
+        }
+
+        process_node(scene->mRootNode, scene);
+    }
+
+    Model::Model(const utility::FilePath& file_path) {
+        Assimp::Importer importer;
+        const aiScene* scene = importer.ReadFile(file_path.string().c_str(), aiProcess_Triangulate | aiProcess_GenNormals);
+
+        if (!scene) {
+            throw ModelError(std::format("Could not load model: {}", importer.GetErrorString()));
+        }
+
+        if (!scene->mRootNode) {
+            throw ModelError("No root node in scene");
+        }
+
+        if (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
+            throw ModelError("Model is incomplete");
+        }
+
+        process_node(scene->mRootNode, scene);
+    }
+
+    void Model::process_node(const aiNode* node, const aiScene* scene) {
+        for (unsigned int i {}; i < node->mNumMeshes; i++) {
+            const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            m_meshes.push_back(process_mesh(mesh, scene));
+        }
+
+        for (unsigned int i {}; i < node->mNumChildren; i++) {
+            process_node(node->mChildren[i], scene);
+        }
+    }
+
+    mesh::Mesh Model::process_mesh(const aiMesh* mesh, const aiScene* scene) {
         mesh::Mesh result_mesh;
 
         if (!mesh->HasPositions()) {
@@ -78,8 +146,8 @@ namespace hill::model {
             }
 
             if (mesh->HasTextureCoords(0)) {
-                vertex.texture_coordinate.x = mesh->mTextureCoords[0][i].x;
-                vertex.texture_coordinate.y = mesh->mTextureCoords[0][i].y;
+                vertex.uv.x = mesh->mTextureCoords[0][i].x;
+                vertex.uv.y = mesh->mTextureCoords[0][i].y;
             }
 
             result_mesh.vertices.push_back(vertex);
@@ -99,40 +167,16 @@ namespace hill::model {
 
         const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
+        if (!m_materials.contains(mesh->mMaterialIndex)) {
+            m_materials[mesh->mMaterialIndex] = load_material_properties(material);
+        }
+
+        result_mesh.material_index = mesh->mMaterialIndex;
+
         result_mesh.textures.append_range(load_material_textures(material, aiTextureType_DIFFUSE));
         result_mesh.textures.append_range(load_material_textures(material, aiTextureType_SPECULAR));
         result_mesh.textures.append_range(load_material_textures(material, aiTextureType_NORMALS));
 
         return result_mesh;
-    }
-
-    Model::Model(const utility::Buffer& buffer) {
-        Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(), aiProcess_Triangulate);
-
-        if (!scene) {
-            throw ModelError(std::format("Could not load model: {}", importer.GetErrorString()));
-        }
-
-        if (!scene->mRootNode) {
-            throw ModelError("No root node in scene");
-        }
-
-        if (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
-            throw ModelError("Model is incomplete");
-        }
-
-        process_node(scene->mRootNode, scene);
-    }
-
-    void Model::process_node(const aiNode* node, const aiScene* scene) {
-        for (unsigned int i {}; i < node->mNumMeshes; i++) {
-            const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            m_meshes.push_back(process_mesh(mesh, scene));
-        }
-
-        for (unsigned int i {}; i < node->mNumChildren; i++) {
-            process_node(node->mChildren[i], scene);
-        }
     }
 }

@@ -28,6 +28,8 @@ namespace hill::renderer {
         imgui_initialize();
         primitives_registry::Registry::initialize();
 
+        renderer_command::enable_depth_test();
+
         m_root_node = std::make_unique<scene::RootNode>();
         m_last_time = std::chrono::high_resolution_clock::now();
     }
@@ -48,7 +50,7 @@ namespace hill::renderer {
         renderer_command::viewport(m_window_width, m_window_height);
 
         renderer_command::clear_color({ m_background_color[0], m_background_color[1], m_background_color[2], 1.0f });
-        renderer_command::clear(renderer_command::Buffers::C);
+        renderer_command::clear(renderer_command::Buffers::CD);
 
         m_editor_camera.update_projection_view();
 
@@ -60,9 +62,9 @@ namespace hill::renderer {
             }
         }
 
-        begin();
-        traverse_tree(m_root_node.get());
-        end();
+        render_begin();
+        render_traverse_tree(m_root_node.get());
+        render_end();
 
         imgui_render();
     }
@@ -107,18 +109,18 @@ namespace hill::renderer {
         m_objects.append_range(node->m_objects);
     }
 
-    void Renderer::begin() {
+    void Renderer::render_begin() {
 
     }
 
-    void Renderer::traverse_tree(scene::Node* tree) {
+    void Renderer::render_traverse_tree(scene::Node* tree) {
         for (const auto& node : tree->m_children | std::views::values) {
             node->process(*this);
-            traverse_tree(node.get());
+            render_traverse_tree(node.get());
         }
     }
 
-    void Renderer::end() {
+    void Renderer::render_end() {
         for (const renderer_common::Object& object : m_objects) {
             draw_object(object);
         }
@@ -134,15 +136,23 @@ namespace hill::renderer {
         submit(node);
     }
 
+    void Renderer::process_node(scene::DirectionalLightNode* node) {
+        m_directional_light = node->m_directional_light;
+    }
+
     void Renderer::draw_object(const renderer_common::Object& object) const {
-        object.program->use();
+        object.material->m_program->use();
+        object.material->use();
         object.vertex_array->bind();
 
-        object.program->upload_uniform_float16("u_transform", object.transform);
+        object.material->m_program->upload_uniform_float16("u_transform", object.transform);
+        object.material->m_program->upload_uniform_float3("u_directional_light.direction", m_directional_light.direction);
+        object.material->m_program->upload_uniform_float3("u_directional_light.color", m_directional_light.color);
+
         renderer_command::draw_elements_triangles(object.elements_count, object.elements_offset);
 
         object.vertex_array->unbind();
-        object.program->unuse();
+        object.material->m_program->unuse();
     }
 
     void Renderer::configure(scene::ModelNode* node) {
@@ -150,17 +160,19 @@ namespace hill::renderer {
             renderer_common::Object& object = node->m_objects.emplace_back();
             object.elements_count = int(mesh.indices.size());
             object.vertex_array = create_vertex_array(mesh);
-            object.program = create_program(mesh);
+            object.material = create_material(mesh, node->m_model);
         }
     }
 
     std::shared_ptr<vertex_array::VertexArray> Renderer::create_vertex_array(const mesh::Mesh& mesh) const {
-        const auto vertices_size = mesh.vertices.size() * sizeof(glm::vec3);  // TODO
+        const auto vertices_size = mesh.vertices.size() * (2 * sizeof(glm::vec3));  // TODO
         const auto vertices = std::make_unique<unsigned char[]>(vertices_size);
 
         for (std::size_t i {}; const mesh::Vertex& vertex : mesh.vertices) {
             std::memcpy(vertices.get() + i, glm::value_ptr(vertex.position), sizeof(vertex.position));
             i += sizeof(vertex.position);
+            std::memcpy(vertices.get() + i, glm::value_ptr(vertex.normal), sizeof(vertex.normal));
+            i += sizeof(vertex.normal);
         }
 
         const auto vertex_buffer = std::make_shared<vertex_buffer::VertexBuffer>();
@@ -174,7 +186,8 @@ namespace hill::renderer {
         element_buffer->unbind();
 
         vertex_array::Layout layout;
-        layout.attribute(vertex_array::Attribute(0, 3, vertex_array::Type::Float, false, sizeof(glm::vec3), 0));  // TODO
+        layout.attribute(vertex_array::Attribute(0, 3, vertex_array::Type::Float, false, 2 * sizeof(glm::vec3), 0));  // TODO
+        layout.attribute(vertex_array::Attribute(1, 3, vertex_array::Type::Float, false, 2 * sizeof(glm::vec3), sizeof(glm::vec3)));
 
         const auto vertex_array = std::make_shared<vertex_array::VertexArray>();
         vertex_array->bind();
@@ -184,37 +197,38 @@ namespace hill::renderer {
         return vertex_array;
     }
 
-    std::shared_ptr<shader::Program> Renderer::create_program(const mesh::Mesh& mesh) {
-        if (const auto iter = m_programs.find("basic"); iter != m_programs.end()) {  // TODO
+    std::shared_ptr<material::Material> Renderer::create_material(const mesh::Mesh& mesh, const model::Model& model) {
+        const ShaderSet shader_set = choose_shader_set(mesh, model);
+
+        if (const auto iter = m_programs.find(shader_set); iter != m_programs.end()) {
             if (const auto program = iter->second.lock(); program) {
-                return program;
+                switch (shader_set) {
+                    case ShaderSet::Basic: {
+                        const auto material = std::make_shared<material::MaterialBasic>(program);
+                        material->color = model.materials().at(mesh.material_index).color_diffuse;
+
+                        return material;
+                    }
+                }
             }
         }
 
-        constexpr const char* vertex_shader_source =  // TODO
-R"(
-    #version 430 core
+        const auto material = std::make_shared<material::MaterialBasic>(create_program(shader_set));
+        material->color = model.materials().at(mesh.material_index).color_diffuse;
 
-    layout(location = 0) in vec3 a_position;
-
-    uniform mat4 u_projection_view;
-    uniform mat4 u_transform;
-
-    void main() {
-        gl_Position = u_projection_view * u_transform * vec4(a_position, 1.0);
+        return material;
     }
-)";
 
-        constexpr const char* fragment_shader_source =
-R"(
-    #version 430 core
+    std::shared_ptr<shader::Program> Renderer::create_program(ShaderSet shader_set) {
+        const char* vertex_shader_source {};
+        const char* fragment_shader_source {};
 
-    layout(location = 0) out vec4 o_color;
-
-    void main() {
-        o_color = vec4(0.5, 0.5, 0.5, 1.0);
-    }
-)";
+        switch (shader_set) {
+            case ShaderSet::Basic:
+                vertex_shader_source = vertex_shader_basic();
+                fragment_shader_source = fragment_shader_basic();
+                break;
+        }
 
         const auto vertex_shader = std::make_shared<shader::Shader>(shader::ShaderType::Vertex);
         vertex_shader->compile(vertex_shader_source);
@@ -227,8 +241,77 @@ R"(
         program->attach_shader(fragment_shader);
         program->link();
 
-        m_programs["basic"] = program;
+        m_programs[shader_set] = program;
 
         return program;
+    }
+
+    ShaderSet Renderer::choose_shader_set(const mesh::Mesh& mesh, const model::Model& model) {
+        return ShaderSet::Basic;
+    }
+
+    const char* Renderer::vertex_shader_basic() {
+        return
+R"(
+    #version 430 core
+
+    layout(location = 0) in vec3 a_position;
+    layout(location = 1) in vec3 a_normal;
+
+    out vec3 v_fragment_normal;
+    out vec3 v_fragment_position;
+
+    uniform mat4 u_projection_view;
+    uniform mat4 u_transform;
+
+    void main() {
+        v_fragment_normal = a_normal;
+        v_fragment_position = vec3(u_transform * vec4(a_position, 1.0));
+        gl_Position = u_projection_view * u_transform * vec4(a_position, 1.0);
+    }
+)";
+    }
+
+    const char* Renderer::fragment_shader_basic() {
+        return
+R"(
+    #version 430 core
+
+    in vec3 v_fragment_normal;
+    in vec3 v_fragment_position;
+
+    layout(location = 0) out vec4 o_color;
+
+    struct MaterialBasic {
+        vec3 color;
+    };
+
+    uniform MaterialBasic u_material;
+
+    struct DirectionalLight {
+        vec3 color;
+        vec3 direction;
+    };
+
+    uniform DirectionalLight u_directional_light;
+
+    vec3 phong(DirectionalLight directional_light, vec3 object_color, vec3 normal, vec3 position) {
+        normal = normalize(normal);
+
+        const float ambient_strength = 0.1;
+        const vec3 ambient_light = ambient_strength * directional_light.color;
+
+        const vec3 direction = normalize(-directional_light.direction);
+        const float diffuse_strength = max(dot(normal, direction), 0.0);
+        const vec3 diffuse_light = diffuse_strength * directional_light.color;
+
+        return (ambient_light + diffuse_light) * object_color;
+    }
+
+    void main() {
+        const vec3 color = phong(u_directional_light, u_material.color, v_fragment_normal, v_fragment_position);
+        o_color = vec4(color, 1.0);
+    }
+)";
     }
 }

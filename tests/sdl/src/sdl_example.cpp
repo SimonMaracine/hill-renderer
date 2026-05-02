@@ -121,7 +121,19 @@ void SdlExample::run() {
     hill::utility::Buffer buffer;
     hill::utility::read_file("assets/teapot.obj", buffer);
 
-    m_renderer.root_node()->add(std::make_shared<hill::scene::ModelNode>("teapot", hill::model::Model(buffer)));
+    auto teapot = std::make_shared<hill::scene::ModelNode>("teapot", hill::model::Model(buffer));
+    m_renderer.root_node()->add(teapot);
+
+    auto heart = std::make_shared<hill::scene::ModelNode>("heart", hill::model::Model(hill::utility::FilePath("assets/heart/heart.obj")));
+    heart->transform = glm::translate(heart->transform, glm::vec3(5.0f, 0.0f, 0.0f));
+    heart->transform = glm::scale(heart->transform, glm::vec3(0.5f, 0.5f, 0.5f));
+    m_renderer.root_node()->add(heart);
+
+    hill::light::DirectionalLight directional_light;
+    directional_light.direction = glm::normalize(glm::vec3(0.1f, -1.0f, 0.4f));
+    directional_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+    auto light = std::make_shared<hill::scene::DirectionalLightNode>("light", directional_light);
+    m_renderer.root_node()->add(light);
 
     while (m_running) {
         SDL_Event event;
@@ -148,6 +160,9 @@ void SdlExample::run() {
             throw std::runtime_error(std::format("SDL_GL_SwapWindow: %s", SDL_GetError()));
         }
     }
+
+    teapot.reset();
+    heart.reset();
 
     m_renderer.uninitialize();
 }

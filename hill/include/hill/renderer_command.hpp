@@ -14,4 +14,7 @@ namespace hill::renderer_command {
 
     void viewport(int x, int y, int width, int height);
     void viewport(int width, int height);
+
+    void enable_depth_test();
+    void disable_depth_test();
 }

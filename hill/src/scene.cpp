@@ -15,4 +15,8 @@ namespace hill::scene {
     void ModelNode::process(renderer::Renderer& renderer) {
         renderer.process_node(this);
     }
+
+    void DirectionalLightNode::process(renderer::Renderer& renderer) {
+        renderer.process_node(this);
+    }
 }

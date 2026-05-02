@@ -50,4 +50,12 @@ namespace hill::renderer_command {
     void viewport(int width, int height) {
         glViewport(0, 0, width, height);
     }
+
+    void enable_depth_test() {
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    void disable_depth_test() {
+        glDisable(GL_DEPTH_TEST);
+    }
 }

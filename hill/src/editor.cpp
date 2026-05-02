@@ -113,7 +113,7 @@ namespace hill::editor {
 
         path += tree->name().data() + "/"s;
 
-        if (ImGui::TreeNode(path.c_str(), "%s", tree->name().data())) {
+        if (ImGui::TreeNode(path.c_str(), "%s", tree->name().empty() ? "/" : tree->name().data())) {
             for (const auto& node : tree->m_children | std::views::values) {
                 scene_hierarchy_tree(node.get(), path);
             }

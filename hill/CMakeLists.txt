@@ -48,6 +48,8 @@ target_sources(
             "include/hill/graphics_api.hpp"
             "include/hill/image.hpp"
             "include/hill/imgui.hpp"
+            "include/hill/light.hpp"
+            "include/hill/material.hpp"
             "include/hill/mesh.hpp"
             "include/hill/model.hpp"
             "include/hill/primitives_registry.hpp"
