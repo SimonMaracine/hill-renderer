@@ -4,6 +4,7 @@
 
 #include <imgui.h>
 
+#include "glm/gtc/type_ptr.inl"
 #include "hill/renderer.hpp"
 #include "hill/primitives_registry.hpp"
 #include "hill/scene.hpp"
@@ -113,7 +114,22 @@ namespace hill::editor {
 
         path += tree->name().data() + "/"s;
 
-        if (ImGui::TreeNode(path.c_str(), "%s", tree->name().empty() ? "/" : tree->name().data())) {
+        static constexpr auto flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        const bool selected = m_wselected_node.lock() == tree->shared_from_this();
+
+        const bool result = ImGui::TreeNodeEx(
+            path.c_str(),
+            flags | (selected ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None),
+            "%s",
+            tree->name().empty() ? "/" : tree->name().data()
+        );
+
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+            m_wselected_node = tree->weak_from_this();
+        }
+
+        if (result) {
             for (const auto& node : tree->m_children | std::views::values) {
                 scene_hierarchy_tree(node.get(), path);
             }
@@ -124,9 +140,31 @@ namespace hill::editor {
 
     void Editor::node_properties(renderer::Renderer& renderer) {
         if (ImGui::Begin("Node Properties")) {
-
+            if (const auto selected_node = m_wselected_node.lock(); selected_node) {
+                if (const auto node = std::dynamic_pointer_cast<scene::RootNode>(selected_node); node) {
+                    node_properties(node.get());
+                } else if (const auto node = std::dynamic_pointer_cast<scene::ModelNode>(selected_node); node) {
+                    node_properties(node.get());
+                } else if (const auto node = std::dynamic_pointer_cast<scene::DirectionalLightNode>(selected_node); node) {
+                    node_properties(node.get());
+                }
+            }
         }
 
         ImGui::End();
+    }
+
+    void Editor::node_properties(scene::RootNode* tree) {
+        ImGui::SeparatorText("Root");
+    }
+
+    void Editor::node_properties(scene::ModelNode* tree) {
+        ImGui::SeparatorText("Model");
+    }
+
+    void Editor::node_properties(scene::DirectionalLightNode* tree) {
+        ImGui::SeparatorText("Directional Light");
+        ImGui::DragFloat3("Direction", glm::value_ptr(tree->directional_light.direction));
+        ImGui::DragFloat3("Color", glm::value_ptr(tree->directional_light.color));
     }
 }

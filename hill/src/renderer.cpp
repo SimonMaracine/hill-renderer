@@ -30,7 +30,7 @@ namespace hill::renderer {
 
         renderer_command::enable_depth_test();
 
-        m_root_node = std::make_unique<scene::RootNode>();
+        m_root_node = std::make_shared<scene::RootNode>();
         m_last_time = std::chrono::high_resolution_clock::now();
     }
 
@@ -137,7 +137,7 @@ namespace hill::renderer {
     }
 
     void Renderer::process_node(scene::DirectionalLightNode* node) {
-        m_directional_light = node->m_directional_light;
+        m_directional_light = node->directional_light;
     }
 
     void Renderer::draw_object(const renderer_common::Object& object) const {

@@ -70,7 +70,7 @@ namespace hill::renderer {
         camera::Camera m_editor_camera;
         light::DirectionalLight m_directional_light;
 
-        std::unique_ptr<scene::RootNode> m_root_node;
+        std::shared_ptr<scene::RootNode> m_root_node;
 
         std::vector<renderer_common::Object> m_objects;
         std::unordered_map<ShaderSet, std::weak_ptr<shader::Program>> m_programs;

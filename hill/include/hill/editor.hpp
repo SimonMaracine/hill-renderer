@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include <glm/glm.hpp>
@@ -10,6 +11,9 @@ namespace hill::renderer {
 
 namespace hill::scene {
     class Node;
+    class RootNode;
+    class ModelNode;
+    class DirectionalLightNode;
 }
 
 namespace hill::editor {
@@ -28,6 +32,9 @@ namespace hill::editor {
         void scene_hierarchy_tree(scene::Node* tree, std::string path);
 
         void node_properties(renderer::Renderer& renderer);
+        void node_properties(scene::RootNode* tree);
+        void node_properties(scene::ModelNode* tree);
+        void node_properties(scene::DirectionalLightNode* tree);
 
         struct Camera {
             glm::vec3 position {0.0f, 0.0f, 2.0f};
@@ -37,5 +44,7 @@ namespace hill::editor {
             float pitch {};
             float yaw = -90.0f;
         } m_camera;
+
+        std::weak_ptr<scene::Node> m_wselected_node;
     };
 }

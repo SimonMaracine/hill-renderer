@@ -20,7 +20,7 @@ namespace hill::editor {
 }
 
 namespace hill::scene {
-    class Node {
+    class Node : public std::enable_shared_from_this<Node> {
     public:
         Node() = default;
         explicit Node(std::string name)
@@ -73,13 +73,13 @@ namespace hill::scene {
 
     class DirectionalLightNode : public Node {
     public:
-        DirectionalLightNode(std::string name, const light::DirectionalLight& directional_light)
-            : Node(std::move(name)), m_directional_light(directional_light) {}
+        explicit DirectionalLightNode(std::string name, const light::DirectionalLight& directional_light = {})
+            : Node(std::move(name)), directional_light(directional_light) {}
 
         void process(renderer::Renderer& renderer) override;
-    private:
-        light::DirectionalLight m_directional_light;
 
+        light::DirectionalLight directional_light;
+    private:
         friend class renderer::Renderer;
     };
 }
