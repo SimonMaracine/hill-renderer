@@ -103,7 +103,13 @@ namespace hill::renderer {
         }
 
         for (renderer_common::Object& object : node->m_objects) {
-            object.transform = node->transform;
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), node->position);
+            transform = glm::rotate(transform, glm::radians(node->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            transform = glm::rotate(transform, glm::radians(node->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            transform = glm::rotate(transform, glm::radians(node->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            transform = glm::scale(transform, node->scale);
+
+            object.transform = transform;
         }
 
         m_objects.append_range(node->m_objects);
@@ -265,7 +271,7 @@ R"(
     uniform mat4 u_transform;
 
     void main() {
-        v_fragment_normal = a_normal;
+        v_fragment_normal = mat3(transpose(inverse(u_transform))) * a_normal;
         v_fragment_position = vec3(u_transform * vec4(a_position, 1.0));
         gl_Position = u_projection_view * u_transform * vec4(a_position, 1.0);
     }
@@ -295,14 +301,14 @@ R"(
 
     uniform DirectionalLight u_directional_light;
 
-    vec3 phong(DirectionalLight directional_light, vec3 object_color, vec3 normal, vec3 position) {
-        normal = normalize(normal);
+    vec3 phong(DirectionalLight directional_light, vec3 object_color, vec3 fragment_normal, vec3 fragment_position) {
+        fragment_normal = normalize(fragment_normal);
+        const vec3 light_direction = normalize(-directional_light.direction);
 
         const float ambient_strength = 0.1;
         const vec3 ambient_light = ambient_strength * directional_light.color;
 
-        const vec3 direction = normalize(-directional_light.direction);
-        const float diffuse_strength = max(dot(normal, direction), 0.0);
+        const float diffuse_strength = max(dot(fragment_normal, light_direction), 0.0);
         const vec3 diffuse_light = diffuse_strength * directional_light.color;
 
         return (ambient_light + diffuse_light) * object_color;

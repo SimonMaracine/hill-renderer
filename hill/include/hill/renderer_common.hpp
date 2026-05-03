@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include "hill/primitives/vertex_array.hpp"
 #include "hill/material.hpp"

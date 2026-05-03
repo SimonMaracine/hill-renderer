@@ -125,8 +125,8 @@ void SdlExample::run() {
     m_renderer.root_node()->add(teapot);
 
     auto heart = std::make_shared<hill::scene::ModelNode>("heart", hill::model::Model(hill::utility::FilePath("assets/heart/heart.obj")));
-    heart->transform = glm::translate(heart->transform, glm::vec3(5.0f, 0.0f, 0.0f));
-    heart->transform = glm::scale(heart->transform, glm::vec3(0.5f, 0.5f, 0.5f));
+    heart->position = glm::vec3(5.0f, 0.0f, 0.0f);
+    heart->scale = glm::vec3(0.4f, 0.4f, 0.4f);
     m_renderer.root_node()->add(heart);
 
     auto light = std::make_shared<hill::scene::DirectionalLightNode>("light");

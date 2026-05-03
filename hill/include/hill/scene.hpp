@@ -5,7 +5,6 @@
 #include <string>
 
 #include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
 
 #include "hill/model.hpp"
 #include "hill/light.hpp"
@@ -50,7 +49,7 @@ namespace hill::scene {
     public:
         void process(renderer::Renderer& renderer) override;
     private:
-
+        friend class renderer::Renderer;
     };
 
     class ModelNode : public Node {
@@ -62,7 +61,9 @@ namespace hill::scene {
 
         void process(renderer::Renderer& renderer) override;
 
-        glm::mat4 transform = glm::identity<glm::mat4>();
+        glm::vec3 position {};
+        glm::vec3 rotation {};
+        glm::vec3 scale {1.0f};
     private:
         model::Model m_model;
         std::vector<renderer_common::Object> m_objects;

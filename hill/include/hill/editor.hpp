@@ -32,9 +32,9 @@ namespace hill::editor {
         void scene_hierarchy_tree(scene::Node* tree, std::string path);
 
         void node_properties(renderer::Renderer& renderer);
-        void node_properties(scene::RootNode* tree);
-        void node_properties(scene::ModelNode* tree);
-        void node_properties(scene::DirectionalLightNode* tree);
+        void node_properties(scene::RootNode* node);
+        void node_properties(scene::ModelNode* node);
+        void node_properties(scene::DirectionalLightNode* node);
 
         struct Camera {
             glm::vec3 position {0.0f, 0.0f, 2.0f};

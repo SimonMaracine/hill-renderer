@@ -154,17 +154,20 @@ namespace hill::editor {
         ImGui::End();
     }
 
-    void Editor::node_properties(scene::RootNode* tree) {
+    void Editor::node_properties(scene::RootNode* node) {
         ImGui::SeparatorText("Root");
     }
 
-    void Editor::node_properties(scene::ModelNode* tree) {
+    void Editor::node_properties(scene::ModelNode* node) {
         ImGui::SeparatorText("Model");
+        ImGui::DragFloat3("Position", glm::value_ptr(node->position), 0.1f);
+        ImGui::DragFloat3("Rotation", glm::value_ptr(node->rotation), 1.0f, 0.0f, 360.0f);
+        ImGui::DragFloat3("Scale", glm::value_ptr(node->scale), 0.01f, 0.0f, 100.0f);
     }
 
-    void Editor::node_properties(scene::DirectionalLightNode* tree) {
+    void Editor::node_properties(scene::DirectionalLightNode* node) {
         ImGui::SeparatorText("Directional Light");
-        ImGui::DragFloat3("Direction", glm::value_ptr(tree->directional_light.direction));
-        ImGui::DragFloat3("Color", glm::value_ptr(tree->directional_light.color));
+        ImGui::DragFloat3("Direction", glm::value_ptr(node->directional_light.direction), 0.1f);
+        ImGui::DragFloat3("Color", glm::value_ptr(node->directional_light.color), 0.01f, 0.0f, 1.0f);
     }
 }
