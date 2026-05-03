@@ -7,11 +7,11 @@
 namespace hill::vertex_buffer {
     VertexBuffer::VertexBuffer() {
         glGenBuffers(1, &m_vertex_buffer);
-        primitives_registry::Registry::get().add_vertex_buffer(m_vertex_buffer);
+        primitives_registry::Registry::get().add_primitive(primitives_registry::Primitive::VertexBuffer, m_vertex_buffer);
     }
 
     VertexBuffer::~VertexBuffer() {
-        primitives_registry::Registry::get().remove_vertex_buffer(m_vertex_buffer);
+        primitives_registry::Registry::get().remove_primitive(primitives_registry::Primitive::VertexBuffer, m_vertex_buffer);
         glDeleteBuffers(1, &m_vertex_buffer);
     }
 

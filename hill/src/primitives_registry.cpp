@@ -17,51 +17,15 @@ namespace hill::primitives_registry {
         return *g_instance;
     }
 
-    void Registry::add_vertex_buffer(unsigned int id) {
-        m_vertex_buffers.insert(id);
+    const Registry::Container& Registry::primitives(Primitive primitive) {
+        return m_primitives[primitive];
     }
 
-    void Registry::remove_vertex_buffer(unsigned int id) {
-        m_vertex_buffers.erase(id);
+    void Registry::add_primitive(Primitive primitive, unsigned int id) {
+        m_primitives[primitive].insert(id);
     }
 
-    void Registry::add_element_buffer(unsigned int id) {
-        m_element_buffers.insert(id);
-    }
-
-    void Registry::remove_element_buffer(unsigned int id) {
-        m_element_buffers.erase(id);
-    }
-
-    void Registry::add_vertex_array(unsigned int id) {
-        m_vertex_arrays.insert(id);
-    }
-
-    void Registry::remove_vertex_array(unsigned int id) {
-        m_vertex_arrays.erase(id);
-    }
-
-    void Registry::add_shader(unsigned int id) {
-        m_shaders.insert(id);
-    }
-
-    void Registry::remove_shader(unsigned int id) {
-        m_shaders.erase(id);
-    }
-
-    void Registry::add_program(unsigned int id) {
-        m_programs.insert(id);
-    }
-
-    void Registry::remove_program(unsigned int id) {
-        m_programs.erase(id);
-    }
-
-    void Registry::add_texture2d(unsigned int id) {
-        m_textures2d.insert(id);
-    }
-
-    void Registry::remove_texture2d(unsigned int id) {
-        m_textures2d.erase(id);
+    void Registry::remove_primitive(Primitive primitive, unsigned int id) {
+        m_primitives[primitive].erase(id);
     }
 }

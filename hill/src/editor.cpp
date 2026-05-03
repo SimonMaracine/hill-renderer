@@ -80,12 +80,12 @@ namespace hill::editor {
 
     void Editor::primitives_registry(renderer::Renderer&) {
         if (ImGui::Begin("Primitives Registry")) {
-            primitives_object("Vertex Buffers", primitives_registry::Registry::get().vertex_buffers());
-            primitives_object("Element Buffers", primitives_registry::Registry::get().element_buffers());
-            primitives_object("Vertex Arrays", primitives_registry::Registry::get().vertex_arrays());
-            primitives_object("Shaders", primitives_registry::Registry::get().shaders());
-            primitives_object("Programs", primitives_registry::Registry::get().programs());
-            primitives_object("Textures 2D", primitives_registry::Registry::get().textures2d());
+            primitives_object("Vertex Buffers", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::VertexBuffer));
+            primitives_object("Element Buffers", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::ElementBuffer));
+            primitives_object("Vertex Arrays", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::VertexArray));
+            primitives_object("Shaders", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::Shader));
+            primitives_object("Programs", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::Program));
+            primitives_object("Textures 2D", primitives_registry::Registry::get().primitives(primitives_registry::Primitive::Texture2D));
         }
 
         ImGui::End();
