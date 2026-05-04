@@ -43,6 +43,7 @@ namespace hill::editor {
 
             float pitch {};
             float yaw = -90.0f;
+            float move_speed_multiplier = 1.0f;
         } m_camera;
 
         std::weak_ptr<scene::Node> m_wselected_node;

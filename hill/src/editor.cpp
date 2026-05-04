@@ -31,7 +31,7 @@ namespace hill::editor {
     }
 
     void Editor::update_camera(renderer::Renderer& renderer) {
-        static constexpr float SHIFT_SPEED = 5.0f;
+        static constexpr float MOVE_SPEED = 5.0f;
         static constexpr float LOOK_SPEED = 7.0f;
 
         if (!ImGui::GetIO().WantCaptureMouse) {
@@ -46,18 +46,24 @@ namespace hill::editor {
         m_camera.pitch = glm::max(m_camera.pitch, -89.0f);
 
         if (!ImGui::GetIO().WantCaptureKeyboard) {
+            if (ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
+                m_camera.move_speed_multiplier = 5.0f;
+            } else {
+                m_camera.move_speed_multiplier = 1.0f;
+            }
+
             if (ImGui::IsKeyDown(ImGuiKey_W)) {
-                m_camera.position += m_camera.front * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position += m_camera.front * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_S)) {
-                m_camera.position -= m_camera.front * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position -= m_camera.front * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_A)) {
-                m_camera.position -= glm::normalize(glm::cross(m_camera.front, m_camera.up)) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position -= glm::normalize(glm::cross(m_camera.front, m_camera.up)) * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_D)) {
-                m_camera.position += glm::normalize(glm::cross(m_camera.front, m_camera.up)) * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position += glm::normalize(glm::cross(m_camera.front, m_camera.up)) * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_E)) {
-                m_camera.position += m_camera.up * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position += m_camera.up * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             } else if (ImGui::IsKeyDown(ImGuiKey_Q)) {
-                m_camera.position -= m_camera.up * SHIFT_SPEED * ImGui::GetIO().DeltaTime;
+                m_camera.position -= m_camera.up * MOVE_SPEED * m_camera.move_speed_multiplier * ImGui::GetIO().DeltaTime;
             }
         }
 

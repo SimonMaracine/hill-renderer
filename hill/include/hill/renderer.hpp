@@ -56,8 +56,6 @@ namespace hill::renderer {
         std::shared_ptr<shader::Program> create_program(ShaderSet shader_set);
 
         static ShaderSet choose_shader_set(const mesh::Mesh& mesh, const model::Model& model);
-        static const char* vertex_shader_basic();
-        static const char* fragment_shader_basic();
 
         imgui::ImGui* m_imgui {};
         configuration::Configuration m_configuration;

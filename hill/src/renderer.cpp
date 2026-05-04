@@ -12,6 +12,7 @@
 #include "hill/renderer_command.hpp"
 #include "hill/debug.hpp"
 #include "hill/primitives_registry.hpp"
+#include "hill/utility.hpp"
 
 namespace hill::renderer {
     Renderer::Renderer(imgui::ImGui& imgui)
@@ -58,6 +59,9 @@ namespace hill::renderer {
             if (const auto program = wprogram.lock(); program) {
                 program->use();
                 program->upload_uniform_float16("u_projection_view", m_editor_camera.projection_view());
+                program->upload_uniform_float3("u_directional_light.direction", m_directional_light.direction);
+                program->upload_uniform_float3("u_directional_light.color", m_directional_light.color);
+                program->upload_uniform_float3("u_view_position", m_directional_light.color);
                 program->unuse();
             }
         }
@@ -152,8 +156,6 @@ namespace hill::renderer {
         object.vertex_array->bind();
 
         object.material->m_program->upload_uniform_float16("u_transform", object.transform);
-        object.material->m_program->upload_uniform_float3("u_directional_light.direction", m_directional_light.direction);
-        object.material->m_program->upload_uniform_float3("u_directional_light.color", m_directional_light.color);
 
         renderer_command::draw_elements_triangles(object.elements_count, object.elements_offset);
 
@@ -226,13 +228,13 @@ namespace hill::renderer {
     }
 
     std::shared_ptr<shader::Program> Renderer::create_program(ShaderSet shader_set) {
-        const char* vertex_shader_source {};
-        const char* fragment_shader_source {};
+        std::string vertex_shader_source;
+        std::string fragment_shader_source;
 
         switch (shader_set) {
             case ShaderSet::Basic:
-                vertex_shader_source = vertex_shader_basic();
-                fragment_shader_source = fragment_shader_basic();
+                utility::read_file("shaders/basic.vert", vertex_shader_source);
+                utility::read_file("shaders/basic.frag", fragment_shader_source);
                 break;
         }
 
@@ -254,70 +256,5 @@ namespace hill::renderer {
 
     ShaderSet Renderer::choose_shader_set(const mesh::Mesh& mesh, const model::Model& model) {
         return ShaderSet::Basic;
-    }
-
-    const char* Renderer::vertex_shader_basic() {
-        return
-R"(
-    #version 430 core
-
-    layout(location = 0) in vec3 a_position;
-    layout(location = 1) in vec3 a_normal;
-
-    out vec3 v_fragment_normal;
-    out vec3 v_fragment_position;
-
-    uniform mat4 u_projection_view;
-    uniform mat4 u_transform;
-
-    void main() {
-        v_fragment_normal = mat3(transpose(inverse(u_transform))) * a_normal;
-        v_fragment_position = vec3(u_transform * vec4(a_position, 1.0));
-        gl_Position = u_projection_view * u_transform * vec4(a_position, 1.0);
-    }
-)";
-    }
-
-    const char* Renderer::fragment_shader_basic() {
-        return
-R"(
-    #version 430 core
-
-    in vec3 v_fragment_normal;
-    in vec3 v_fragment_position;
-
-    layout(location = 0) out vec4 o_color;
-
-    struct MaterialBasic {
-        vec3 color;
-    };
-
-    uniform MaterialBasic u_material;
-
-    struct DirectionalLight {
-        vec3 color;
-        vec3 direction;
-    };
-
-    uniform DirectionalLight u_directional_light;
-
-    vec3 phong(DirectionalLight directional_light, vec3 object_color, vec3 fragment_normal, vec3 fragment_position) {
-        fragment_normal = normalize(fragment_normal);
-        const vec3 light_direction = normalize(-directional_light.direction);
-
-        const float ambient_strength = 0.1;
-        const vec3 ambient_light = ambient_strength * directional_light.color;
-
-        const float diffuse_strength = max(dot(fragment_normal, light_direction), 0.0);
-        const vec3 diffuse_light = diffuse_strength * directional_light.color;
-
-        return (ambient_light + diffuse_light) * object_color;
-    }
-
-    void main() {
-        const vec3 color = phong(u_directional_light, u_material.color, v_fragment_normal, v_fragment_position);
-        o_color = vec4(color, 1.0);
-    }
-)";
     }
 }
