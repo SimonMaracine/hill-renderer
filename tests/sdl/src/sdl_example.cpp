@@ -131,7 +131,6 @@ void SdlExample::run() {
 
     auto light = std::make_shared<hill::scene::DirectionalLightNode>("light");
     light->directional_light.direction = glm::normalize(glm::vec3(0.1f, -1.0f, 0.4f));
-    light->directional_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
     m_renderer.root_node()->add(light);
 
     while (m_running) {

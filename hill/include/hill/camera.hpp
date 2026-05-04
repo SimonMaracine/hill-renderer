@@ -13,6 +13,7 @@ namespace hill::camera {
 
         void position_orientation(glm::vec3 position, glm::vec3 at, glm::vec3 up) {
             m_view = glm::lookAt(position, at, up);
+            m_position = position;
         }
 
         void position_rotation(glm::vec3 position, glm::vec3 rotation) {
@@ -23,16 +24,19 @@ namespace hill::camera {
             matrix = glm::rotate(matrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
             m_view = glm::inverse(matrix);
+            m_position = position;
         }
 
         void update_projection_view() {
             m_projection_view = m_projection * m_view;
         }
 
+        glm::vec3 position() const { return m_position; }
         const glm::mat4& view() const { return m_view; }
         const glm::mat4& projection() const { return m_projection; }
         const glm::mat4& projection_view() const { return m_projection_view; }
     private:
+        glm::vec3 m_position {};
         glm::mat4 m_view = glm::identity<glm::mat4>();
         glm::mat4 m_projection = glm::identity<glm::mat4>();
 

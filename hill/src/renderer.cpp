@@ -47,21 +47,23 @@ namespace hill::renderer {
         m_frame_time = current_time - m_last_time;
         m_last_time = current_time;
 
-        m_editor_camera.projection(m_window_width, m_window_height, 45.0f, 0.01f, 100.0f);
+        m_camera.projection(m_window_width, m_window_height, 45.0f, 0.01f, 100.0f);
         renderer_command::viewport(m_window_width, m_window_height);
 
         renderer_command::clear_color({ m_background_color[0], m_background_color[1], m_background_color[2], 1.0f });
         renderer_command::clear(renderer_command::Buffers::CD);
 
-        m_editor_camera.update_projection_view();
+        m_camera.update_projection_view();
 
         for (const auto& wprogram : m_programs | std::views::values) {
             if (const auto program = wprogram.lock(); program) {
                 program->use();
-                program->upload_uniform_float16("u_projection_view", m_editor_camera.projection_view());
+                program->upload_uniform_float16("u_projection_view", m_camera.projection_view());
                 program->upload_uniform_float3("u_directional_light.direction", m_directional_light.direction);
-                program->upload_uniform_float3("u_directional_light.color", m_directional_light.color);
-                program->upload_uniform_float3("u_view_position", m_directional_light.color);
+                program->upload_uniform_float3("u_directional_light.ambient_color", m_directional_light.ambient_color);
+                program->upload_uniform_float3("u_directional_light.diffuse_color", m_directional_light.diffuse_color);
+                program->upload_uniform_float3("u_directional_light.specular_color", m_directional_light.specular_color);
+                program->upload_uniform_float3("u_view_position", m_camera.position());
                 program->unuse();
             }
         }
@@ -213,7 +215,9 @@ namespace hill::renderer {
                 switch (shader_set) {
                     case ShaderSet::Basic: {
                         const auto material = std::make_shared<material::MaterialBasic>(program);
-                        material->color = model.materials().at(mesh.material_index).color_diffuse;
+                        material->ambient_color = model.materials().at(mesh.material_index).color_ambient;
+                        material->diffuse_color = model.materials().at(mesh.material_index).color_diffuse;
+                        material->specular_color = model.materials().at(mesh.material_index).color_specular;
 
                         return material;
                     }
@@ -222,7 +226,9 @@ namespace hill::renderer {
         }
 
         const auto material = std::make_shared<material::MaterialBasic>(create_program(shader_set));
-        material->color = model.materials().at(mesh.material_index).color_diffuse;
+        material->ambient_color = model.materials().at(mesh.material_index).color_ambient;
+        material->diffuse_color = model.materials().at(mesh.material_index).color_diffuse;
+        material->specular_color = model.materials().at(mesh.material_index).color_specular;
 
         return material;
     }

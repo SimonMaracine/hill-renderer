@@ -124,6 +124,16 @@ namespace hill::shader {
         glUseProgram(0);
     }
 
+    void Program::upload_uniform_float1(const std::string& name, float value) const {
+        const int location = glGetUniformLocation(m_program, name.c_str());
+
+        if (location < 0) {
+            throw ShaderError(std::format("Could not find uniform: {}", name));
+        }
+
+        glUniform1f(location, value);
+    }
+
     void Program::upload_uniform_float3(const std::string& name, glm::vec3 value) const {
         const int location = glGetUniformLocation(m_program, name.c_str());
 

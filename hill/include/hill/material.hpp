@@ -34,9 +34,15 @@ namespace hill::material {
         using Material::Material;
 
         void use() override {
-            m_program->upload_uniform_float3("u_material.color", color);
+            m_program->upload_uniform_float3("u_material.ambient_color", ambient_color);
+            m_program->upload_uniform_float3("u_material.diffuse_color", diffuse_color);
+            m_program->upload_uniform_float3("u_material.specular_color", specular_color);
+            m_program->upload_uniform_float1("u_material.shininess", shininess);
         }
 
-        glm::vec3 color {};
+        glm::vec3 ambient_color {0.6f};
+        glm::vec3 diffuse_color {0.6f};
+        glm::vec3 specular_color {0.6f};
+        float shininess = 32.0f;
     };
 }

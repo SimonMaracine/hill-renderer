@@ -73,7 +73,7 @@ namespace hill::editor {
         direction.z = glm::sin(glm::radians(m_camera.yaw)) * glm::cos(glm::radians(m_camera.pitch));
         m_camera.front = glm::normalize(direction);
 
-        renderer.m_editor_camera.position_orientation(m_camera.position, m_camera.position + m_camera.front, m_camera.up);
+        renderer.m_camera.position_orientation(m_camera.position, m_camera.position + m_camera.front, m_camera.up);
     }
 
     void Editor::performance(renderer::Renderer& renderer) {
@@ -121,7 +121,6 @@ namespace hill::editor {
         path += tree->name().data() + "/"s;
 
         static constexpr auto flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-
         const bool selected = m_wselected_node.lock() == tree->shared_from_this();
 
         const bool result = ImGui::TreeNodeEx(
@@ -174,6 +173,8 @@ namespace hill::editor {
     void Editor::node_properties(scene::DirectionalLightNode* node) {
         ImGui::SeparatorText("Directional Light");
         ImGui::DragFloat3("Direction", glm::value_ptr(node->directional_light.direction), 0.1f);
-        ImGui::DragFloat3("Color", glm::value_ptr(node->directional_light.color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Ambient Color", glm::value_ptr(node->directional_light.ambient_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Diffuse Color", glm::value_ptr(node->directional_light.diffuse_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Specular Color", glm::value_ptr(node->directional_light.specular_color), 0.01f, 0.0f, 1.0f);
     }
 }

@@ -33,9 +33,9 @@ namespace hill::mesh {
 
     struct Material {
         std::string name;
-        glm::vec3 color_ambient {1.0};
-        glm::vec3 color_diffuse {1.0};
-        glm::vec3 color_specular {1.0};
+        glm::vec3 color_ambient {0.6f};
+        glm::vec3 color_diffuse {0.6f};
+        glm::vec3 color_specular {0.6f};
     };
 
     struct Mesh {

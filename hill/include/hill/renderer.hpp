@@ -65,7 +65,7 @@ namespace hill::renderer {
 
         float m_background_color[3] { 0.4f, 0.1f, 0.6f };
 
-        camera::Camera m_editor_camera;
+        camera::Camera m_camera;
         light::DirectionalLight m_directional_light;
 
         std::shared_ptr<scene::RootNode> m_root_node;
