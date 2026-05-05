@@ -5,6 +5,8 @@
 
 #include <glm/glm.hpp>
 
+#include "material.hpp"
+
 namespace hill::renderer {
     class Renderer;
 }
@@ -12,6 +14,7 @@ namespace hill::renderer {
 namespace hill::scene {
     class Node;
     class RootNode;
+    class MeshNode;
     class ModelNode;
     class DirectionalLightNode;
 }
@@ -33,11 +36,14 @@ namespace hill::editor {
 
         void node_properties(renderer::Renderer& renderer);
         void node_properties(scene::RootNode* node);
+        void node_properties(scene::MeshNode* node);
         void node_properties(scene::ModelNode* node);
         void node_properties(scene::DirectionalLightNode* node);
 
+        bool material_basic(material::MaterialBasic* material);
+
         struct Camera {
-            glm::vec3 position {0.0f, 0.0f, 2.0f};
+            glm::vec3 position {0.0f, 0.0f, 20.0f};
             glm::vec3 front {0.0f, 0.0f, -1.0f};
             glm::vec3 up {0.0f, 1.0f, 0.0f};
 
@@ -47,5 +53,10 @@ namespace hill::editor {
         } m_camera;
 
         std::weak_ptr<scene::Node> m_wselected_node;
+
+        friend class scene::RootNode;
+        friend class scene::MeshNode;
+        friend class scene::ModelNode;
+        friend class scene::DirectionalLightNode;
     };
 }

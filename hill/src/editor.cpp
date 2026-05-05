@@ -146,13 +146,7 @@ namespace hill::editor {
     void Editor::node_properties(renderer::Renderer& renderer) {
         if (ImGui::Begin("Node Properties")) {
             if (const auto selected_node = m_wselected_node.lock(); selected_node) {
-                if (const auto node = std::dynamic_pointer_cast<scene::RootNode>(selected_node); node) {
-                    node_properties(node.get());
-                } else if (const auto node = std::dynamic_pointer_cast<scene::ModelNode>(selected_node); node) {
-                    node_properties(node.get());
-                } else if (const auto node = std::dynamic_pointer_cast<scene::DirectionalLightNode>(selected_node); node) {
-                    node_properties(node.get());
-                }
+                selected_node->editor_process(*this);
             }
         }
 
@@ -161,6 +155,11 @@ namespace hill::editor {
 
     void Editor::node_properties(scene::RootNode* node) {
         ImGui::SeparatorText("Root");
+    }
+
+    void Editor::node_properties(scene::MeshNode* node) {
+        ImGui::SeparatorText("Mesh");
+        material_basic(dynamic_cast<material::MaterialBasic*>(node->m_object.material.get()));
     }
 
     void Editor::node_properties(scene::ModelNode* node) {
@@ -173,8 +172,21 @@ namespace hill::editor {
     void Editor::node_properties(scene::DirectionalLightNode* node) {
         ImGui::SeparatorText("Directional Light");
         ImGui::DragFloat3("Direction", glm::value_ptr(node->directional_light.direction), 0.1f);
-        ImGui::DragFloat3("Ambient Color", glm::value_ptr(node->directional_light.ambient_color), 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat3("Diffuse Color", glm::value_ptr(node->directional_light.diffuse_color), 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat3("Specular Color", glm::value_ptr(node->directional_light.specular_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Ambient", glm::value_ptr(node->directional_light.ambient_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Diffuse", glm::value_ptr(node->directional_light.diffuse_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Specular", glm::value_ptr(node->directional_light.specular_color), 0.01f, 0.0f, 1.0f);
+    }
+
+    bool Editor::material_basic(material::MaterialBasic* material) {
+        if (!material) {
+            return false;
+        }
+
+        ImGui::DragFloat3("Ambient", glm::value_ptr(material->ambient_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Diffuse", glm::value_ptr(material->diffuse_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat3("Specular", glm::value_ptr(material->specular_color), 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Shininess", &material->shininess, 1.0f, 1.0f, 256.0f);
+
+        return true;
     }
 }

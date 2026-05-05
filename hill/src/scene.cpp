@@ -1,6 +1,7 @@
 #include "hill/scene.hpp"
 
 #include "hill/renderer.hpp"
+#include "hill/editor.hpp"
 
 namespace hill::scene {
     void Node::add(std::shared_ptr<Node> child) {
@@ -8,15 +9,35 @@ namespace hill::scene {
         m_children[std::string(name)] = std::move(child);
     }
 
-    void RootNode::process(renderer::Renderer& renderer) {
-        renderer.process_node(this);
+    void RootNode::renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) {
+        renderer.render_node(ctx, this);
     }
 
-    void ModelNode::process(renderer::Renderer& renderer) {
-        renderer.process_node(this);
+    void RootNode::editor_process(editor::Editor& editor) {
+        editor.node_properties(this);
     }
 
-    void DirectionalLightNode::process(renderer::Renderer& renderer) {
-        renderer.process_node(this);
+    void MeshNode::renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) {
+        renderer.render_node(ctx, this);
+    }
+
+    void MeshNode::editor_process(editor::Editor& editor) {
+        editor.node_properties(this);
+    }
+
+    void ModelNode::renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) {
+        renderer.render_node(ctx, this);
+    }
+
+    void ModelNode::editor_process(editor::Editor& editor) {
+        editor.node_properties(this);
+    }
+
+    void DirectionalLightNode::renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) {
+        renderer.render_node(ctx, this);
+    }
+
+    void DirectionalLightNode::editor_process(editor::Editor& editor) {
+        editor.node_properties(this);
     }
 }

@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <format>
 
 #include <glm/glm.hpp>
 
@@ -11,6 +12,7 @@
 #include "hill/renderer_common.hpp"
 
 namespace hill::renderer {
+    struct TraversalCtx;
     class Renderer;
 }
 
@@ -32,7 +34,8 @@ namespace hill::scene {
         Node(Node&&) = delete;
         Node& operator=(Node&&) = delete;
 
-        virtual void process(renderer::Renderer& renderer) = 0;
+        virtual void renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) = 0;
+        virtual void editor_process(editor::Editor& editor) = 0;
 
         const std::string& name() const { return m_name; }
 
@@ -47,26 +50,43 @@ namespace hill::scene {
 
     class RootNode : public Node {
     public:
-        void process(renderer::Renderer& renderer) override;
+        void renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) override;
+        void editor_process(editor::Editor& editor) override;
     private:
         friend class renderer::Renderer;
     };
 
+    class MeshNode : public Node {
+    public:
+        explicit MeshNode(std::string name)
+            : Node(std::move(name)) {}
+
+        void renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) override;
+        void editor_process(editor::Editor& editor) override;
+    private:
+        renderer_common::Object m_object;
+
+        friend class renderer::Renderer;
+        friend class editor::Editor;
+    };
+
     class ModelNode : public Node {
     public:
-        ModelNode(std::string name, model::Model model)
+        ModelNode(std::string name, std::shared_ptr<model::Model> model)
             : Node(std::move(name)), m_model(std::move(model)) {
-            m_objects.reserve(m_model.meshes().size());
+            for (std::size_t i {}; i < m_model->meshes().size(); i++) {
+                add(std::make_shared<MeshNode>(std::format("{}{}", m_name, i)));
+            }
         }
 
-        void process(renderer::Renderer& renderer) override;
+        void renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) override;
+        void editor_process(editor::Editor& editor) override;
 
         glm::vec3 position {};
         glm::vec3 rotation {};
         glm::vec3 scale {1.0f};
     private:
-        model::Model m_model;
-        std::vector<renderer_common::Object> m_objects;
+        std::shared_ptr<model::Model> m_model;
         bool m_configured {};
 
         friend class renderer::Renderer;
@@ -77,7 +97,8 @@ namespace hill::scene {
         explicit DirectionalLightNode(std::string name, const light::DirectionalLight& directional_light = {})
             : Node(std::move(name)), directional_light(directional_light) {}
 
-        void process(renderer::Renderer& renderer) override;
+        void renderer_process(renderer::Renderer& renderer, renderer::TraversalCtx& ctx) override;
+        void editor_process(editor::Editor& editor) override;
 
         light::DirectionalLight directional_light;
     private:

@@ -2,6 +2,7 @@
 
 #include <ranges>
 #include <cstring>
+#include <cassert>
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -68,8 +69,9 @@ namespace hill::renderer {
             }
         }
 
+        TraversalCtx ctx;
         render_begin();
-        render_traverse_tree(m_root_node.get());
+        render_traverse_tree(ctx, m_root_node.get());
         render_end();
 
         imgui_render();
@@ -102,57 +104,60 @@ namespace hill::renderer {
         m_imgui->end(ImGui::GetDrawData());
     }
 
-    void Renderer::submit(scene::ModelNode* node) {
-        if (!node->m_configured) {
-            configure(node);
-            node->m_configured = true;
-        }
-
-        for (renderer_common::Object& object : node->m_objects) {
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), node->position);
-            transform = glm::rotate(transform, glm::radians(node->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            transform = glm::rotate(transform, glm::radians(node->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            transform = glm::rotate(transform, glm::radians(node->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            transform = glm::scale(transform, node->scale);
-
-            object.transform = transform;
-        }
-
-        m_objects.append_range(node->m_objects);
+    void Renderer::submit(const RenderObject& object) {
+        m_objects.emplace_back(object);
     }
 
     void Renderer::render_begin() {
 
     }
 
-    void Renderer::render_traverse_tree(scene::Node* tree) {
-        for (const auto& node : tree->m_children | std::views::values) {
-            node->process(*this);
-            render_traverse_tree(node.get());
-        }
-    }
-
     void Renderer::render_end() {
-        for (const renderer_common::Object& object : m_objects) {
+        for (const RenderObject& object : m_objects) {
             draw_object(object);
         }
 
         m_objects.clear();
     }
 
-    void Renderer::process_node(scene::RootNode* node) {
+    void Renderer::render_traverse_tree(TraversalCtx& ctx, scene::Node* tree) {
+        tree->renderer_process(*this, ctx);
+
+        for (const auto& child : tree->m_children | std::views::values) {
+            TraversalCtx new_ctx = ctx;
+            child->renderer_process(*this, new_ctx);
+            render_traverse_tree(new_ctx, child.get());
+        }
+    }
+
+    void Renderer::render_node(TraversalCtx& ctx, scene::RootNode* node) {
 
     }
 
-    void Renderer::process_node(scene::ModelNode* node) {
-        submit(node);
+    void Renderer::render_node(TraversalCtx& ctx, scene::MeshNode* node) {
+        submit(RenderObject { node->m_object, ctx.transform });
     }
 
-    void Renderer::process_node(scene::DirectionalLightNode* node) {
+    void Renderer::render_node(TraversalCtx& ctx, scene::ModelNode* node) {
+        if (!node->m_configured) {
+            configure(node);
+            node->m_configured = true;
+        }
+
+        glm::mat4 transform = glm::translate(glm::identity<glm::mat4>(), node->position);
+        transform = glm::rotate(transform, glm::radians(node->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(node->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(node->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::scale(transform, node->scale);
+
+        ctx.transform = transform;
+    }
+
+    void Renderer::render_node(TraversalCtx& ctx, scene::DirectionalLightNode* node) {
         m_directional_light = node->directional_light;
     }
 
-    void Renderer::draw_object(const renderer_common::Object& object) const {
+    void Renderer::draw_object(const RenderObject& object) const {
         object.material->m_program->use();
         object.material->use();
         object.vertex_array->bind();
@@ -166,11 +171,20 @@ namespace hill::renderer {
     }
 
     void Renderer::configure(scene::ModelNode* node) {
-        for (const mesh::Mesh& mesh : node->m_model.meshes()) {
-            renderer_common::Object& object = node->m_objects.emplace_back();
-            object.elements_count = int(mesh.indices.size());
-            object.vertex_array = create_vertex_array(mesh);
-            object.material = create_material(mesh, node->m_model);
+        if (node->m_model->meshes().size() != node->m_children.size()) {
+            throw error::Error("Invalid model node children");
+        }
+
+        for (const auto& [mesh, child] : std::views::zip(node->m_model->meshes(), node->m_children | std::views::values)) {
+            std::shared_ptr<scene::MeshNode> mesh_node = std::dynamic_pointer_cast<scene::MeshNode>(child);
+
+            if (!mesh_node) {
+                throw error::Error("Invalid model node child");
+            }
+
+            mesh_node->m_object.elements_count = int(mesh.indices.size());
+            mesh_node->m_object.vertex_array = create_vertex_array(mesh);
+            mesh_node->m_object.material = create_material(mesh, *node->m_model);
         }
     }
 

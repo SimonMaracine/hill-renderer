@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include <glm/ext/matrix_transform.hpp>
+
 #include "hill/configuration.hpp"
 #include "hill/imgui.hpp"
 #include "hill/camera.hpp"
@@ -20,6 +22,14 @@ namespace hill::editor {
 namespace hill::renderer {
     enum class ShaderSet {
         Basic
+    };
+
+    struct RenderObject : renderer_common::Object {
+        glm::mat4 transform = glm::identity<glm::mat4>();
+    };
+
+    struct TraversalCtx {
+        glm::mat4 transform = glm::identity<glm::mat4>();
     };
 
     class Renderer {
@@ -38,16 +48,17 @@ namespace hill::renderer {
         void imgui_uninitialize() const;
         void imgui_render() const;
 
-        void submit(scene::ModelNode* node);
+        void submit(const RenderObject& object);
 
         void render_begin();
-        void render_traverse_tree(scene::Node* tree);
         void render_end();
-        void process_node(scene::RootNode* node);
-        void process_node(scene::ModelNode* node);
-        void process_node(scene::DirectionalLightNode* node);
+        void render_traverse_tree(TraversalCtx& ctx, scene::Node* tree);
+        void render_node(TraversalCtx& ctx, scene::RootNode* node);
+        void render_node(TraversalCtx& ctx, scene::MeshNode* node);
+        void render_node(TraversalCtx& ctx, scene::ModelNode* node);
+        void render_node(TraversalCtx& ctx, scene::DirectionalLightNode* node);
 
-        void draw_object(const renderer_common::Object& object) const;
+        void draw_object(const RenderObject& object) const;
 
         void configure(scene::ModelNode* node);
 
@@ -70,7 +81,7 @@ namespace hill::renderer {
 
         std::shared_ptr<scene::RootNode> m_root_node;
 
-        std::vector<renderer_common::Object> m_objects;
+        std::vector<RenderObject> m_objects;
         std::unordered_map<ShaderSet, std::weak_ptr<shader::Program>> m_programs;
 
         std::chrono::high_resolution_clock::time_point m_last_time {};
@@ -78,6 +89,7 @@ namespace hill::renderer {
 
         friend class editor::Editor;
         friend class scene::RootNode;
+        friend class scene::MeshNode;
         friend class scene::ModelNode;
         friend class scene::DirectionalLightNode;
     };
